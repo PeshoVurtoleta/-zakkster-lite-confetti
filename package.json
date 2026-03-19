@@ -1,0 +1,45 @@
+{
+  "name": "@zakkster/lite-confetti",
+  "author": "Zahary Shinikchiev <shinikchiev@yahoo.com>",
+  "version": "1.0.0",
+  "description": "Deterministic confetti engine with OKLCH colors, 5 shapes, reduced-motion support, and timeline composability.",
+  "type": "module",
+  "main": "Confetti.js",
+  "types": "Confetti.d.ts",
+  "exports": {
+    ".": {
+      "types": "./Confetti.d.ts",
+      "import": "./Confetti.js",
+      "default": "./Confetti.js"
+    }
+  },
+  "files": [
+    "Confetti.js",
+    "Confetti.d.ts",
+    "README.md"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/PeshoVurtoleta/-zakkster-lite-confetti#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PeshoVurtoleta/-zakkster-lite-confetti.git"
+  },
+  "bugs": {
+    "url": "https://github.com/PeshoVurtoleta/-zakkster-lite-confetti/issues",
+    "email": "shinikchiev@yahoo.com"
+  },
+  "dependencies": {
+    "@zakkster/lite-random": "^1.0.0",
+    "@zakkster/lite-color": "^1.0.0",
+    "lite-ticker": "^1.0.0"
+  },
+  "keywords": [
+    "confetti",
+    "particles",
+    "celebration",
+    "oklch",
+    "deterministic",
+    "reduced-motion",
+    "canvas"
+  ]
+}

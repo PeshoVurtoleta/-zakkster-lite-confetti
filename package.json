@@ -1,7 +1,7 @@
 {
   "name": "@zakkster/lite-confetti",
   "author": "Zahary Shinikchiev <shinikchiev@yahoo.com>",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Deterministic confetti engine with OKLCH colors, 5 shapes, reduced-motion support, and timeline composability.",
   "type": "module",
   "main": "Confetti.js",
@@ -31,7 +31,7 @@
   "dependencies": {
     "@zakkster/lite-random": "^1.0.0",
     "@zakkster/lite-color": "^1.0.0",
-    "lite-ticker": "^1.0.0"
+    "@zakkster/lite-ticker": "^1.0.0"
   },
   "keywords": [
     "confetti",

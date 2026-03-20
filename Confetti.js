@@ -24,7 +24,7 @@
 
 import { Random } from '@zakkster/lite-random';
 import { toCssOklch } from '@zakkster/lite-color';
-import { Ticker } from 'lite-ticker';
+import { Ticker } from '@zakkster/lite-ticker';
 
 
 // ─────────────────────────────────────────────────────────

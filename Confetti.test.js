@@ -30,7 +30,7 @@ vi.mock('@zakkster/lite-random', () => {
 vi.mock('@zakkster/lite-color', () => ({
     toCssOklch: (c) => `oklch(${c.l} ${c.c} ${c.h})`,
 }));
-vi.mock('lite-ticker', () => {
+vi.mock('@zakkster/lite-ticker', () => {
     class T {
         constructor() {
             this._fns = [];

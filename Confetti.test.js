@@ -59,8 +59,16 @@ vi.mock('@zakkster/lite-ticker', () => {
 
 import {createConfetti, confetti} from './Confetti.js';
 
+// --- DOM Mocks ---
 function mockCanvas() {
-    const c = document.createElement('canvas');
+    // Return a plain object instead of calling document.createElement
+    const c = {
+        style: {},
+        remove: vi.fn(),
+        parentElement: null,
+        width: 0,
+        height: 0
+    };
     Object.defineProperty(c, 'clientWidth', {value: 800, configurable: true});
     Object.defineProperty(c, 'clientHeight', {value: 600, configurable: true});
     c.getContext = vi.fn(() => ({
@@ -73,6 +81,18 @@ function mockCanvas() {
     }));
     return c;
 }
+
+// Inject fake browser APIs into the Node environment
+vi.stubGlobal('document', {
+    createElement: (tag) => (tag === 'canvas' ? mockCanvas() : { style: {} }),
+    getElementById: vi.fn(() => null),
+    body: { appendChild: vi.fn() }
+});
+
+vi.stubGlobal('window', {
+    devicePixelRatio: 1,
+    matchMedia: vi.fn(() => ({ matches: false, addEventListener: vi.fn() }))
+});
 
 describe('🎉 lite-confetti', () => {
 

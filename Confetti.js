@@ -1,5 +1,5 @@
 /**
- * @zakkster/lite-confetti — Deterministic Confetti Engine
+ * @zakkster/lite-confetti v1.1.0 — Deterministic Confetti Engine
  *
  * The confetti library that canvas-confetti wishes it was.
  * Deterministic (seeded), zero-GC hot path, OKLCH colors,
@@ -167,7 +167,8 @@ export function createConfetti(canvas, {
         ch = canvas.clientHeight || canvas.height;
         canvas.width = cw * dpr;
         canvas.height = ch * dpr;
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset to identity first
+        ctx.scale(dpr, dpr);                  // Then apply exact DPR
     }
 
     updateSize(); // Initial sizing
@@ -289,7 +290,7 @@ export function createConfetti(canvas, {
 
             const c = colors[i];
             if (pool.shape[i] !== 4) {
-                ctx.fillStyle = typeof c === 'string' ? c : toCssOklch(c);
+                ctx.fillStyle = c; // Pre-parsed in burst()/spray() — zero allocation
             }
 
             switch (pool.shape[i]) {
@@ -346,37 +347,41 @@ export function createConfetti(canvas, {
          * @param {Function} [options.onComplete] Called when all burst particles die
          */
         burst({
-            x, y,
-            count = 80,
-            spread = 1.2,
-            speed = 400,
-            speedVariance = 200,
-            gravity = 600,
-            drag = 0.98,
-            sizeMin = 5,
-            sizeMax = 12,
-            lifeMin = 1.5,
-            lifeMax = 3.0,
-            shape = 'rect',
-            emoji = '🎉',
-            colors = DEFAULT_COLORS,
-            angle = -Math.PI / 2,
-            onComplete,
-        } = {}) {
+                  x, y,
+                  count = 80,
+                  spread = 1.2,
+                  speed = 400,
+                  speedVariance = 200,
+                  gravity = 600,
+                  drag = 0.98,
+                  sizeMin = 5,
+                  sizeMax = 12,
+                  lifeMin = 1.5,
+                  lifeMax = 3.0,
+                  shape = 'rect',
+                  emoji = '🎉',
+                  colors = DEFAULT_COLORS,
+                  angle = -Math.PI / 2,
+                  onComplete,
+              } = {}) {
             if (destroyed) return;
 
             const cx = x ?? cw / 2;
             const cy = y ?? ch * 0.33;
             const shapeId = SHAPE_MAP[shape] ?? 0;
 
+            // Pre-parse OKLCH objects to CSS strings ONCE per burst.
+            // This keeps the render loop 100% zero-GC — no toCssOklch() per frame.
+            const parsedColors = colors.map(c => typeof c === 'string' ? c : toCssOklch(c));
+
             // Reduced motion: show static confetti, no animation
             if (respectReducedMotion && _prefersReducedMotion) {
-                _renderStaticBurst(ctx, cx, cy, count, colors, shapeId, sizeMin, sizeMax, spread, emoji, rng);
+                _renderStaticBurst(ctx, cx, cy, count, parsedColors, shapeId, sizeMin, sizeMax, spread, emoji, rng);
                 if (onComplete) setTimeout(onComplete, 1500);
                 return;
             }
 
-            const colorPick = () => rng.pick(colors);
+            const colorPick = () => rng.pick(parsedColors);
             const config = { sizeMin, sizeMax, lifeMin, lifeMax, gravity, drag, shapeId, emoji, colorPick };
 
             for (let i = 0; i < count; i++) {
@@ -404,35 +409,38 @@ export function createConfetti(canvas, {
          * @param {number} [options.rate=5]         Particles per frame
          */
         spray({
-            duration = 1000,
-            rate = 5,
-            x, y,
-            spread = 0.8,
-            speed = 300,
-            speedVariance = 150,
-            gravity = 500,
-            drag = 0.98,
-            sizeMin = 4,
-            sizeMax = 10,
-            lifeMin = 1.2,
-            lifeMax = 2.5,
-            shape = 'rect',
-            emoji = '🎉',
-            colors = DEFAULT_COLORS,
-            angle = -Math.PI / 2,
-        } = {}) {
+                  duration = 1000,
+                  rate = 5,
+                  x, y,
+                  spread = 0.8,
+                  speed = 300,
+                  speedVariance = 150,
+                  gravity = 500,
+                  drag = 0.98,
+                  sizeMin = 4,
+                  sizeMax = 10,
+                  lifeMin = 1.2,
+                  lifeMax = 2.5,
+                  shape = 'rect',
+                  emoji = '🎉',
+                  colors = DEFAULT_COLORS,
+                  angle = -Math.PI / 2,
+              } = {}) {
             if (destroyed) return;
 
             const cx = x ?? cw / 2;
             const cy = y ?? ch * 0.33;
             const shapeId = SHAPE_MAP[shape] ?? 0;
 
+            // Pre-parse OKLCH objects to CSS strings ONCE per spray.
+            const parsedColors = colors.map(c => typeof c === 'string' ? c : toCssOklch(c));
+
             if (respectReducedMotion && _prefersReducedMotion) {
-                _renderStaticBurst(ctx, cx, cy, 30, colors, shapeId, sizeMin, sizeMax, spread, emoji, rng);
+                _renderStaticBurst(ctx, cx, cy, 30, parsedColors, shapeId, sizeMin, sizeMax, spread, emoji, rng);
                 return;
             }
 
-            const colorPick = () => rng.pick(colors);
+            const colorPick = () => rng.pick(parsedColors);
             const config = { sizeMin, sizeMax, lifeMin, lifeMax, gravity, drag, shapeId, emoji, colorPick };
 
             let elapsed = 0;
@@ -514,7 +522,7 @@ function _renderStaticBurst(ctx, cx, cy, count, colors, shapeId, sizeMin, sizeMa
         ctx.globalAlpha = 0.85;
 
         if (shapeId !== 4) {
-            ctx.fillStyle = typeof color === 'string' ? color : toCssOklch(color);
+            ctx.fillStyle = color; // Already pre-parsed by burst()/spray()
         }
 
         switch (shapeId) {

@@ -314,6 +314,40 @@ Creates a temporary overlay canvas, fires a burst, cleans up automatically when 
 
 ---
 
+## Changelog
+
+### v1.1.0
+
+**Performance: Zero-GC OKLCH rendering**
+
+Moved `toCssOklch()` color conversion out of the render loop entirely. Colors are now pre-parsed to CSS strings once per `burst()` / `spray()` call, before any particles spawn. The render loop reads pre-computed string references with zero allocation.
+
+Before (v1.0.0 — inside render loop, runs every frame for every particle):
+```javascript
+ctx.fillStyle = typeof c === 'string' ? c : toCssOklch(c);  // 30,000 strings/sec
+```
+
+After (v1.1.0 — inside burst/spray, runs once per call):
+```javascript
+const parsedColors = colors.map(c => typeof c === 'string' ? c : toCssOklch(c));
+// render loop:
+ctx.fillStyle = colorsArr[i];  // pure reference, zero allocation
+```
+
+**Stability: Identity matrix reset on canvas resize**
+
+Enforced strict `setTransform(1,0,0,1,0,0)` identity reset before applying DPR scaling in `updateSize()`. Prevents potential cumulative scaling bugs when the canvas resizes multiple times during its lifecycle.
+
+```javascript
+ctx.setTransform(1, 0, 0, 1, 0, 0);  // 1. Reset to identity
+ctx.scale(dpr, dpr);                   // 2. Apply exact DPR
+```
+
+**Stability: RAF-debounced ResizeObserver**
+
+Added `requestAnimationFrame` batching to the `ResizeObserver` callback. No matter how many times the observer fires during a CSS Grid/Flex reflow, `updateSize()` executes at most once per frame — preventing layout thrashing.
+
+
 ## License
 
 MIT
